@@ -9,8 +9,22 @@ const postSlice = createSlice({
   name: "posts",
   initialState,
   reducers: {
-    postAdded: (state, action) => {
+    postAdded: {
+      reducer(state, action) {
+      reducer(state, action) {
       state.push(action.payload);
+      },
+      prepare(title, content, userId) {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            content,
+            userId,
+            date: new Date().toISOString(),
+          },
+        };
+      },
     },
   },
 });
