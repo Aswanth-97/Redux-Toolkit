@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost, getPostById, updatePost } from "./postSlice";
+import { addPost, deletePost, getPostById, updatePost } from "./postSlice";
 import { selectAllUers } from "../users/usersSlice";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -44,11 +44,11 @@ const EditForm = () => {
     </option>
   ));
 
-  const onSubmitpost = () => {
+  const onSubmitpost = async () => {
     if (canSave) {
       try {
         setAddreqStatus("pending");
-        dispatch(
+        await dispatch(
           updatePost({
             id: post.id,
             title,
@@ -66,6 +66,22 @@ const EditForm = () => {
       } finally {
         setAddreqStatus("idle");
       }
+    }
+  };
+
+  const onDeletepost = () => {
+    try {
+      setAddreqStatus("pending");
+      dispatch(deletePost({ id: post.id })).unwrap();
+
+      setContent("");
+      setTitle("");
+      setUserId("");
+      navigate("/");
+    } catch (error) {
+      console.error("failed to delete the post", error);
+    } finally {
+      setAddreqStatus("idle");
     }
   };
 
@@ -95,7 +111,10 @@ const EditForm = () => {
           onChange={onContentChange}
         ></textarea>
         <button type="button" onClick={onSubmitpost} disabled={!canSave}>
-          SUBMIT
+          Save
+        </button>
+        <button type="button" onClick={onDeletepost} className="deleteButton">
+          Delete
         </button>
       </form>
     </section>

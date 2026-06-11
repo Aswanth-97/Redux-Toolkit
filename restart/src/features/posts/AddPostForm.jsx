@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addPost } from "./postSlice";
 import { selectAllUers } from "../users/usersSlice";
+import { useNavigate } from "react-router-dom";
 
 const addPostForm = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -37,10 +39,11 @@ const addPostForm = () => {
         setContent("");
         setTitle("");
         setUserId("");
+        navigate("/");
       } catch (error) {
-        console.error("filed to save the post",error)
-      }finally{
-        setAddreqStatus("idle")
+        console.error("filed to save the post", error);
+      } finally {
+        setAddreqStatus("idle");
       }
     }
   };

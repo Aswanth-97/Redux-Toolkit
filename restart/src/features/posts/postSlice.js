@@ -42,6 +42,22 @@ export const updatePost = createAsyncThunk(
   },
 );
 
+export const deletePost = createAsyncThunk(
+  "delete/deletePost",
+  async (initalpost) => {
+    const { id } = initalpost;
+    try {
+      const response = await axios.delete(`${postsUrl}/${id}`);
+      if (response?.status == 200) {
+        return initalpost;
+      }
+      return `${response?.status}:${response?.statusText}`;
+    } catch (error) {
+      return error.message;
+    }
+  },
+);
+
 const postSlice = createSlice({
   name: "posts",
   initialState,
@@ -105,26 +121,56 @@ const postSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(addPost.fulfilled, (state, action) => {
+        // Fix for API post IDs:
+        // Creating sortedPosts & assigning the id
+        // would be not be needed if the fake API
+        // returned accurate new post IDs
+        const sortedPosts = state.posts.sort((a, b) => {
+          if (a.id > b.id) return 1;
+          if (a.id < b.id) return -1;
+          return 0;
+        });
+        action.payload.id = sortedPosts[sortedPosts.length - 1].id + 1;
+        // End fix for fake API post IDs
+
         action.payload.userId = Number(action.payload.userId);
         action.payload.date = new Date().toISOString();
         action.payload.reactions = {
-          thumbsup: 0,
+          thumbsUp: 0,
           wow: 0,
-          hart: 0,
+          heart: 0,
+          rocket: 0,
+          coffee: 0,
         };
-
+        console.log(action.payload);
         state.posts.push(action.payload);
       })
       .addCase(updatePost.fulfilled, (state, action) => {
         if (!action.payload?.id) {
           console.log("update not complete");
-          console.log(action.payload);
+          return;
+        }
+
+        const index = state.posts.findIndex(
+          (post) => post.id === action.payload.id,
+        );
+
+        if (index !== -1) {
+          state.posts[index] = {
+            ...state.posts[index],
+            ...action.payload,
+            date: new Date().toISOString(),
+          };
+        }
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("delete not complete");
           return;
         }
         const { id } = action.payload;
-        action.payload.date = new Date().toISOString();
-        const posts = state.posts.filter((post) => post.id == id);
-        state.posts = [...posts, action.payload];
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = posts;
       });
   },
 });
