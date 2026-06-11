@@ -1,19 +1,34 @@
-import React, { useState } from "react";
+import React from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "./postSlice";
+import { addPost, getPostById, updatePost } from "./postSlice";
 import { selectAllUers } from "../users/usersSlice";
+import { useNavigate, useParams } from "react-router-dom";
 
-const addPostForm = () => {
+const EditForm = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [userId, setUserId] = useState("");
+  const { postId } = useParams();
+
+  const post = useSelector((state) => getPostById(state, Number(postId)));
+
+  const [title, setTitle] = useState(post?.title);
+  const [content, setContent] = useState(post?.body);
+  const [userId, setUserId] = useState(post?.userId);
   const [addReqstatus, setAddreqStatus] = useState("idle");
 
   const onTitleChange = (e) => setTitle(e.target.value);
   const onContentChange = (e) => setContent(e.target.value);
   const onUserChange = (e) => setUserId(e.target.value);
+
+  if (!post) {
+    return (
+      <section>
+        <p>Post Not Found</p>
+      </section>
+    );
+  }
 
   const users = useSelector(selectAllUers);
 
@@ -33,14 +48,23 @@ const addPostForm = () => {
     if (canSave) {
       try {
         setAddreqStatus("pending");
-        dispatch(addPost({ title, body: content, userId })).unwrap();
+        dispatch(
+          updatePost({
+            id: post.id,
+            title,
+            body: content,
+            userId,
+            reactions: post.reactions,
+          }),
+        ).unwrap();
         setContent("");
         setTitle("");
         setUserId("");
+        navigate(`/post/${postId}`);
       } catch (error) {
-        console.error("filed to save the post",error)
-      }finally{
-        setAddreqStatus("idle")
+        console.error("filed to save the post", error);
+      } finally {
+        setAddreqStatus("idle");
       }
     }
   };
@@ -58,7 +82,7 @@ const addPostForm = () => {
         />
 
         <label htmlFor="AuthorName">Author</label>
-        <select value={userId} id="AuthorName" onChange={onUserChange}>
+        <select defaultValue={userId} id="AuthorName" onChange={onUserChange}>
           <option value=""></option>
           {userOptions}
         </select>
@@ -78,4 +102,4 @@ const addPostForm = () => {
   );
 };
 
-export default addPostForm;
+export default EditForm;
