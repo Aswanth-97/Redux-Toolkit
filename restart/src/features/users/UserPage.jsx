@@ -1,6 +1,6 @@
 import React from "react";
 import { selectUserById } from "./usersSlice";
-import { selectAllPosts } from "../posts/postSlice";
+import { selectAllPosts, selectPostsByUser } from "../posts/postSlice";
 import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -9,10 +9,7 @@ const UserPage = () => {
 
   const user = useSelector((state) => selectUserById(state, Number(userId)));
 
-  const postsbyUser = useSelector((state) => {
-    const allPosts = selectAllPosts(state);
-    return allPosts.filter((post) => post.userId === Number(userId));
-  });
+  const postsbyUser = useSelector(state=>selectPostsByUser(state,Number(userId)))
 
   const postTitles = postsbyUser.map((post) => (
     <li key={post.id}>
