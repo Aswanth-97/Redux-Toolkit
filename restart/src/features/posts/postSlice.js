@@ -147,22 +147,33 @@ const postSlice = createSlice({
       })
       .addCase(updatePost.fulfilled, (state, action) => {
         if (!action.payload?.id) {
-          console.log("update not complete");
+          console.log("Update could not complete");
+          console.log(action.payload);
           return;
         }
-
-        const index = state.posts.findIndex(
-          (post) => post.id === action.payload.id,
-        );
-
-        if (index !== -1) {
-          state.posts[index] = {
-            ...state.posts[index],
-            ...action.payload,
-            date: new Date().toISOString(),
-          };
-        }
+        const { id } = action.payload;
+        action.payload.date = new Date().toISOString();
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = [...posts, action.payload];
       })
+      // .addCase(updatePost.fulfilled, (state, action) => {
+      //   if (!action.payload?.id) {
+      //     console.log("update not complete");
+      //     return;
+      //   }
+
+      //   const index = state.posts.findIndex(
+      //     (post) => post.id === action.payload.id,
+      //   );
+
+      //   if (index !== -1) {
+      //     state.posts[index] = {
+      //       ...state.posts[index],
+      //       ...action.payload,
+      //       date: new Date().toISOString(),
+      //     };
+      //   }
+      // })
       .addCase(deletePost.fulfilled, (state, action) => {
         if (!action.payload?.id) {
           console.log("delete not complete");

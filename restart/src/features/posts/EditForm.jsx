@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 const EditForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+   const users = useSelector(selectAllUers);
 
   const { postId } = useParams();
 
@@ -20,7 +21,7 @@ const EditForm = () => {
 
   const onTitleChange = (e) => setTitle(e.target.value);
   const onContentChange = (e) => setContent(e.target.value);
-  const onUserChange = (e) => setUserId(e.target.value);
+  const onUserChange = (e) => setUserId(Number(e.target.value));
 
   if (!post) {
     return (
@@ -30,7 +31,7 @@ const EditForm = () => {
     );
   }
 
-  const users = useSelector(selectAllUers);
+ 
 
   const canSave =
     Boolean(title) &&
