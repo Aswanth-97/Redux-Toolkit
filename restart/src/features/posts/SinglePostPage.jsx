@@ -12,11 +12,11 @@ const SinglePostPage = () => {
   const post = useSelector((state) => getPostById(state, Number(postId)));
 
 
-  const allPosts = useSelector(state => state.posts.posts);
+//   const allPosts = useSelector(state => state.posts.post);
 
-console.log(
-  allPosts.filter(p => p.id === Number(postId))
-);
+// console.log(
+//   allPosts.filter(p => p.id === Number(postId))
+// );
 
   if (!post) {
     return (

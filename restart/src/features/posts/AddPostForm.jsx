@@ -1,41 +1,50 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "./postSlice";
-import { selectAllUers } from "../users/usersSlice";
+// import { addPost } from "./postSlice";
+import {  useGetUsersQuery } from "../users/usersSlice";
 import { useNavigate } from "react-router-dom";
+import { useAddNewPostMutation } from "./postSlice";
 
 const addPostForm = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [userId, setUserId] = useState("");
-  const [addReqstatus, setAddreqStatus] = useState("idle");
+  // const [addReqstatus, setAddreqStatus] = useState("idle");
+
+  const [addNewPost, { isLoading }] = useAddNewPostMutation();
+
+  const { data: users, isSuccess } = useGetUsersQuery("getUsers");
+
+  let userOptions;
+
+  if (isSuccess) {
+    const userOptions = users.ids.map((id) => (
+      <option value={id} key={id}>
+        {users.entities[id].name}
+      </option>
+    ));
+  }
 
   const onTitleChange = (e) => setTitle(e.target.value);
   const onContentChange = (e) => setContent(e.target.value);
   const onUserChange = (e) => setUserId(e.target.value);
 
-  const users = useSelector(selectAllUers);
+  // const users = useSelector(selectAllUers);
 
   const canSave =
-    Boolean(title) &&
-    Boolean(content) &&
-    Boolean(userId) &&
-    addReqstatus == "idle";
+    Boolean(title) && Boolean(content) && Boolean(userId) && !isLoading;
+  // && addReqstatus == "idle";
 
-  const userOptions = users.map((user) => (
-    <option value={user.id} key={user.id}>
-      {user.name}
-    </option>
-  ));
-
-  const onSubmitpost = () => {
+  const onSubmitpost = async () => {
     if (canSave) {
       try {
-        setAddreqStatus("pending");
-        dispatch(addPost({ title, body: content, userId })).unwrap();
+        // setAddreqStatus("pending");
+        // dispatch(addPost({ title, body: content, userId })).unwrap();
+        await addNewPost({ title, body: content, userId }).unwrap();
+
         setContent("");
         setTitle("");
         setUserId("");

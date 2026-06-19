@@ -1,14 +1,22 @@
 import React from "react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost, deletePost, getPostById, updatePost } from "./postSlice";
-import { selectAllUers } from "../users/usersSlice";
+import { getPostById } from "./postSlice";
+// import { selectAllUers } from "../users/usersSlice";
 import { useNavigate, useParams } from "react-router-dom";
+import { useUpdatePostMutation, useDeletePostMutation } from "./postSlice";
+import { useGetUsersQuery } from "../users/usersSlice";
 
 const EditForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-   const users = useSelector(selectAllUers);
+
+  const [updatePost, { isLoading }] = useUpdatePostMutation();
+  const [deletePost] = useDeletePostMutation();
+
+  // const users = useSelector(selectAllUers);
+
+  const { data: users, isSuccess } = useGetUsersQuery();
 
   const { postId } = useParams();
 
@@ -17,7 +25,7 @@ const EditForm = () => {
   const [title, setTitle] = useState(post?.title);
   const [content, setContent] = useState(post?.body);
   const [userId, setUserId] = useState(post?.userId);
-  const [addReqstatus, setAddreqStatus] = useState("idle");
+  // const [addReqstatus, setAddreqStatus] = useState("idle");
 
   const onTitleChange = (e) => setTitle(e.target.value);
   const onContentChange = (e) => setContent(e.target.value);
@@ -31,49 +39,44 @@ const EditForm = () => {
     );
   }
 
- 
-
   const canSave =
-    Boolean(title) &&
-    Boolean(content) &&
-    Boolean(userId) &&
-    addReqstatus == "idle";
+    Boolean(title) && Boolean(content) && Boolean(userId) && !isLoading;
+  // addReqstatus == "idle";
 
-  const userOptions = users.map((user) => (
-    <option value={user.id} key={user.id}>
-      {user.name}
-    </option>
-  ));
+  let userOptions;
+
+  if (isSuccess) {
+    userOptions = users.ids.map((id) => (
+      <option value={id} key={id}>
+        {users.entities[id].name}
+      </option>
+    ));
+  }
 
   const onSubmitpost = async () => {
     if (canSave) {
       try {
-        setAddreqStatus("pending");
-        await dispatch(
-          updatePost({
-            id: post.id,
-            title,
-            body: content,
-            userId,
-            reactions: post.reactions,
-          }),
-        ).unwrap();
+        await updatePost({
+          id: post.id,
+          title,
+          body: content,
+          userId,
+        }).unwrap();
         setContent("");
         setTitle("");
         setUserId("");
         navigate(`/post/${postId}`);
       } catch (error) {
         console.error("filed to save the post", error);
-      } finally {
-        setAddreqStatus("idle");
       }
     }
   };
 
-  const onDeletepost = () => {
+  const onDeletepost = async () => {
     try {
-      setAddreqStatus("pending");
-      dispatch(deletePost({ id: post.id })).unwrap();
+      // setAddreqStatus("pending");
+      // dispatch(deletePost({ id: post.id })).unwrap();
+      await deletePost({ id: post.id }).unwrap();
 
       setContent("");
       setTitle("");
@@ -81,8 +84,6 @@ const EditForm = () => {
       navigate("/");
     } catch (error) {
       console.error("failed to delete the post", error);
-    } finally {
-      setAddreqStatus("idle");
     }
   };
 

@@ -1,16 +1,20 @@
 import React from "react";
-import { selectAllUers } from "./usersSlice";
+
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { useGetUsersQuery } from "./usersSlice";
 
 const UsersList = () => {
-  const users = useSelector(selectAllUers);
+  const { data:users, isSuccess } = useGetUsersQuery("getUsers");
 
-  const renderdPosts = users.map((user) => (
-    <li key={user.id}>
-      <Link to={`/user/${user.id}`}>{user.name}</Link>
-    </li>
-  ));
+  let renderdPosts;
+  if (isSuccess) {
+    renderdPosts = users.ids.map((id) => (
+      <li key={id}>
+        <Link to={`/user/${id}`}>{users.entities[id].name}</Link>
+      </li>
+    ));
+  }
 
   return (
     <section>
